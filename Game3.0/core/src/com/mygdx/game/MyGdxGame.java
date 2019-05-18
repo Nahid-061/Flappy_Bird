@@ -10,7 +10,7 @@ import com.mygdx.game.States.MenuState;
 
 public class MyGdxGame extends ApplicationAdapter {
 	public static final int WIDTH = 500;
-	public static final int HEIGHT = 700;
+	public static final int HEIGHT = 800;
 	public static final String TITLE = "Flappy Bird";
 
 	private GameStateManager gsm;
