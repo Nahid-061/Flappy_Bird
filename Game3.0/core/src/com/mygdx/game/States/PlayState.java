@@ -2,7 +2,6 @@ package com.mygdx.game.States;
 
 //import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
@@ -11,8 +10,6 @@ import com.mygdx.game.MyGdxGame;
 import com.mygdx.game.sprites.Bird;
 import com.mygdx.game.sprites.Tube;
 
-import java.lang.reflect.*;
-import  java.util.*;
 public class PlayState extends State {
     private static final int tube_spacing = 150;
     private static final int tube_count = 4;
@@ -23,6 +20,9 @@ public class PlayState extends State {
     private Bird bird;
     private Texture background;
     private Tube tube;
+    private boolean gameOver;
+    private Texture gameOverPic;
+
 
     private Texture ground;
     private Vector2 groundPos1, groundPos2;
@@ -33,8 +33,9 @@ public class PlayState extends State {
 
         bird = new Bird(50,250);
         background = new Texture("background-day.png");
-
+        gameOverPic = new Texture("gameover.png");
         ground = new Texture("base.png");
+
         groundPos1 = new Vector2(cam.position.x - cam.viewportWidth/2, groundYOffSet);
         groundPos2 = new Vector2((cam.position.x - cam.viewportWidth/2) + ground.getWidth(), groundYOffSet);
 
@@ -44,14 +45,18 @@ public class PlayState extends State {
             tubes.add(new Tube(50 + (i+1) * (tube_spacing + Tube.tube_width)));
         }
 
-
+        gameOver = false;
 
     }
 
     @Override
     protected void handleInput() {
-        if(Gdx.input.justTouched())
-            bird.jump();
+        if(Gdx.input.justTouched()){
+            if(gameOver)
+                gsm.set(new PlayState(gsm));
+            else
+                bird.jump();
+        }
     }
 
     @Override
@@ -67,12 +72,19 @@ public class PlayState extends State {
         }
 
         for(Tube tube : tubes){
-            if(tube.collides(bird.getAreaBird()))
-                gsm.set(new PlayState(gsm));
+            if(tube.collides(bird.getAreaBird())) {
+                gameOver = true;
+                bird.collition = true;
+                //gsm.set(new PlayState(gsm));
+            }
         }
 
-        if(bird.getPosition().y <= ground.getHeight() + groundYOffSet)
-            gsm.set(new PlayState(gsm));
+        //show game over
+        if(bird.getPosition().y <= ground.getHeight() + groundYOffSet) {
+            gameOver = true;
+            bird.collition = true;
+            //gsm.set(new PlayState(gsm));
+        }
         cam.update();
 
     }
@@ -88,9 +100,12 @@ public class PlayState extends State {
             sb.draw(tube.getDownTube(), tube.getPosDownTube().x , tube.getPosDownTube().y);
         }
 
-
         sb.draw(ground, groundPos1.x, groundPos1.y);
         sb.draw(ground, groundPos2.x, groundPos2.y);
+
+        if(gameOver)
+            sb.draw(gameOverPic, cam.position.x - gameOverPic.getWidth()/2, cam.position.y);
+
         sb.end();
     }
 
@@ -101,11 +116,7 @@ public class PlayState extends State {
         for(Tube tube : tubes){
             tube.dispose();
         }
-        /*tube2.dispose();
-        tube3.dispose();
-        tube1.dispose();
-        tube4.dispose();*/
-        //System.out.println("Play State dispose");
+
     }
 
     private void updateGround(){
